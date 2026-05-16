@@ -1,0 +1,3 @@
+Туда:
+
+    project_summaries
