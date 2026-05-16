@@ -1,5 +1,7 @@
 /.venv/
 /.idea/
+AGENTS.MD
+/backend/core/security/certs
 AGENTS.md
 .python-version
 pyproject.toml
