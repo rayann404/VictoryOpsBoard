@@ -4,7 +4,6 @@ from modules.organizations.router import org_router
 from modules.projects.router import projects_router
 from modules.tasks.router import task_router
 
-
 app = FastAPI()
 
 app.include_router(auth_api.router)
