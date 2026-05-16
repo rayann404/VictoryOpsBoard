@@ -1,13 +1,12 @@
 from typing import List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.modules.organizations.repo.repository import OrganizationRepository
 from backend.modules.organizations.schemas.org_schemas import OrganizationCreate, OrganizationUpdate
 from backend.modules.organizations.models.organization import Organization
 
 class OrganizationService:
-    def __init__(self, session: AsyncSession):
-        self.repository = OrganizationRepository(session)
-        self.session = session
+    def __init__(self, repository: OrganizationRepository):
+        self.repository = repository
     
     async def get_organization(self, org_id: int) -> Optional[Organization]:
         return await self.repository.get_by_id(org_id)

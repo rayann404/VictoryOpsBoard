@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from services.auth_service import AuthService
+from backend.modules.identity.services.auth_service import AuthService
 from ..schemas.auth_schemas import UserTokenInfo, UserLoginRequest
-#from ..schemas.user_schemas import UserCreate
-from dependies.auth_depends import (
+from ..schemas.user_schemas import UserCreate
+from backend.modules.identity.dependies.auth_dependies import (
     get_auth_service,
     get_current_auth_user,
     get_current_auth_user_for_refresh,
@@ -39,4 +39,4 @@ async def auth_refresh_jwt(
     user: UserLoginRequest = Depends(get_current_auth_user_for_refresh),
     service: AuthService = Depends(get_auth_service),
 ) -> UserTokenInfo:
-    return
+    return await service.refresh_user(user)
