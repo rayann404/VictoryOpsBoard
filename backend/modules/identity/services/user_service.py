@@ -14,7 +14,7 @@ class UserService:
         self.user_repo = user_repo
         
     def _hash_password(self, password: str) -> str:
-        return hash(password)
+        return self._hash_password(password)
 
         
     # User Methods

@@ -6,11 +6,7 @@ from modules.identity.models.user import Role
 
 class RoleService:
     def __init__(self, role_repo: RoleRepository):
-        self.role_repo = role_repo
-        
-    def _hash_password(self, password: str) -> str:
-        return hash(password)
-        
+        self.role_repo = role_repo      
     # Role Methods
     async def get_role(self, role_id: int) -> Optional[Role]:
         return await self.role_repo.get_by_id(role_id)

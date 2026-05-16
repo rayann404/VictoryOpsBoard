@@ -37,15 +37,6 @@ class TaskService:
         old_column_id = task.column_id
         if old_column_id == new_column_id:
             return task
-        
-
-        new_column = await self.column_repo.get_by_id(new_column_id)
-        if new_column and new_column.wip_limit:
-            current_count = await self.task_repo.count_in_column(new_column_id)
-            if current_count >= new_column.wip_limit:
-                raise HTTPException(status_code=400, detail="WIP Limit reached for this column")
-
-
         updated_task = await self.task_repo.update(task, column_id=new_column_id)
 
         await self.activity_repo.create(

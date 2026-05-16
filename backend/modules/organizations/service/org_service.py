@@ -16,13 +16,10 @@ class OrganizationService:
         
     async def create_organization(self, data: OrganizationCreate) -> Organization:
         # TODO: Business logic validation goes here
-        # For instance, ensuring unique slug can be done via try/except on IntegrityError in repository, 
-        # or checking explicitly before creation.
+
         
         org = await self.repository.create(**data.model_dump())
         
-        # EDA: Emit event
-        # await event_bus.publish("ORGANIZATION_CREATED", org_id=org.id)
         
         return org
         
@@ -34,15 +31,12 @@ class OrganizationService:
         update_data = data.model_dump(exclude_unset=True)
         updated_org = await self.repository.update(org, **update_data)
         
-        # EDA: Emit event
-        # await event_bus.publish("ORGANIZATION_UPDATED", org_id=updated_org.id)
+
         
         return updated_org
 
     async def delete_organization(self, org_id: int) -> bool:
         success = await self.repository.delete(org_id)
         if success:
-            # EDA: Emit event
-            # await event_bus.publish("ORGANIZATION_DELETED", org_id=org_id)
             pass
         return success
