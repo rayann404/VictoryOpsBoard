@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.repository import BaseRepository
-from backend.modules.projects.models.project import Column
+from core.repository import BaseRepository
+from modules.projects.models.project import Column
 
 
 class ColumnRepository(BaseRepository[Column]):

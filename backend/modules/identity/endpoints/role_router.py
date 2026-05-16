@@ -2,9 +2,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.identity.dependies.role_depends import get_role_service
-from backend.modules.identity.schemas.user_schemas import RoleCreate, RoleResponse, RoleUpdate
-from backend.modules.identity.services.role_service import RoleService
+from modules.identity.dependies.role_depends import get_role_service
+from modules.identity.schemas.user_schemas import RoleCreate, RoleResponse, RoleUpdate
+from modules.identity.services.role_service import RoleService
 
 
 router = APIRouter(prefix="/identity/roles", tags=["Roles"])

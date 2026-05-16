@@ -2,13 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.tasks.depends.comment_depends import get_comment_service
-from backend.modules.tasks.schemas.comment_schemas import (
+from modules.tasks.depends.comment_depends import get_comment_service
+from modules.tasks.schemas.comment_schemas import (
     CommentCreate,
     CommentResponse,
     CommentUpdate,
 )
-from backend.modules.tasks.service.comment_service import CommentService
+from modules.tasks.service.comment_service import CommentService
 
 
 router = APIRouter(prefix="/comments", tags=["Comments"])

@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from backend.modules.projects.models.project import Column
-from backend.modules.projects.repo.column_repository import ColumnRepository
-from backend.modules.projects.schemas.column_schemas import ColumnCreate, ColumnUpdate
+from modules.projects.models.project import Column
+from modules.projects.repo.column_repository import ColumnRepository
+from modules.projects.schemas.column_schemas import ColumnCreate, ColumnUpdate
 
 
 class ColumnService:

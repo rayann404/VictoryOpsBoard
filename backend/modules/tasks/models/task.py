@@ -1,7 +1,7 @@
 from typing import List, Optional, Any
 from sqlalchemy import String, ForeignKey, Integer, JSON, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.core.models.base import Base
+from core.models.base import Base
 
 class Task(Base):
     __tablename__ = "tasks"

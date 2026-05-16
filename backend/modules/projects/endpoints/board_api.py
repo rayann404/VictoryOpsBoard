@@ -2,13 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.projects.depends.board_depends import get_board_service
-from backend.modules.projects.schemas.board_schemas import (
+from modules.projects.depends.board_depends import get_board_service
+from modules.projects.schemas.board_schemas import (
     BoardCreate,
     BoardResponse,
     BoardUpdate,
 )
-from backend.modules.projects.service.board_service import BoardService
+from modules.projects.service.board_service import BoardService
 
 
 router = APIRouter(prefix="/boards", tags=["Boards"])

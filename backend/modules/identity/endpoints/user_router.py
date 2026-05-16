@@ -1,8 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from backend.modules.identity.dependies.user_depends import get_user_service
-from backend.modules.identity.schemas.user_schemas import UserResponse, UserCreate, UserUpdate
-from backend.modules.identity.services.user_service import UserService
+from modules.identity.dependies.user_depends import get_user_service
+from modules.identity.schemas.user_schemas import UserResponse, UserCreate, UserUpdate
+from modules.identity.services.user_service import UserService
 
 router = APIRouter(prefix="/identity/users", tags=["Users"])
 

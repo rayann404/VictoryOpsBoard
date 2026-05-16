@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
-from backend.modules.projects.repo.column_repository import ColumnRepository
-from backend.modules.projects.service.column_service import ColumnService
+from database import get_db
+from modules.projects.repo.column_repository import ColumnRepository
+from modules.projects.service.column_service import ColumnService
 
 
 def get_column_repository(session: AsyncSession = Depends(get_db)) -> ColumnRepository:

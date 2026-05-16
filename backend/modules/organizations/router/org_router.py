@@ -1,8 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
-from backend.modules.organizations.depends.org_depends import get_organization_service
-from backend.modules.organizations.schemas.org_schemas import OrganizationResponse, OrganizationCreate, OrganizationUpdate
-from backend.modules.organizations.service.org_service import OrganizationService
+from modules.organizations.depends.org_depends import get_organization_service
+from modules.organizations.schemas.org_schemas import OrganizationResponse, OrganizationCreate, OrganizationUpdate
+from modules.organizations.service.org_service import OrganizationService
 
 router = APIRouter(prefix="/organizations", tags=["Organizations"])
 

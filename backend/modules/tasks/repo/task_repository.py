@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.repository import BaseRepository
-from backend.modules.tasks.models.task import Task
+from core.repository import BaseRepository
+from modules.tasks.models.task import Task
 
 
 class TaskRepository(BaseRepository[Task]):

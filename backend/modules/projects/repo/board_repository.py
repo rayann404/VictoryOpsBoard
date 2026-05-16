@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.core.repository import BaseRepository
-from backend.modules.projects.models.project import Board
+from core.repository import BaseRepository
+from modules.projects.models.project import Board
 
 
 class BoardRepository(BaseRepository[Board]):

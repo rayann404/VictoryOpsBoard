@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from backend.modules.identity.repos.user_repository import RoleRepository
-from backend.modules.identity.schemas.user_schemas import RoleCreate, RoleUpdate
-from backend.modules.identity.models.user import Role
+from modules.identity.repos.user_repository import RoleRepository
+from modules.identity.schemas.user_schemas import RoleCreate, RoleUpdate
+from modules.identity.models.user import Role
 
 class RoleService:
     def __init__(self, role_repo: RoleRepository):

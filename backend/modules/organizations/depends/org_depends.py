@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
-from backend.modules.organizations.repo.repository import OrganizationRepository
-from backend.modules.organizations.service.org_service import OrganizationService
+from database import get_db
+from modules.organizations.repo.repository import OrganizationRepository
+from modules.organizations.service.org_service import OrganizationService
 
 
 def get_organization_repository(

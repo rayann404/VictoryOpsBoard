@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.database import get_db
-from backend.modules.tasks.repo.comment_repository import CommentRepository
-from backend.modules.tasks.service.comment_service import CommentService
+from database import get_db
+from modules.tasks.repo.comment_repository import CommentRepository
+from modules.tasks.service.comment_service import CommentService
 
 
 def get_comment_repository(session: AsyncSession = Depends(get_db)) -> CommentRepository:

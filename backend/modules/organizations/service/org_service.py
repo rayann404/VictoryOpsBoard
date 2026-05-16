@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from backend.modules.organizations.repo.repository import OrganizationRepository
-from backend.modules.organizations.schemas.org_schemas import OrganizationCreate, OrganizationUpdate
-from backend.modules.organizations.models.organization import Organization
+from modules.organizations.repo.repository import OrganizationRepository
+from modules.organizations.schemas.org_schemas import OrganizationCreate, OrganizationUpdate
+from modules.organizations.models.organization import Organization
 
 class OrganizationService:
     def __init__(self, repository: OrganizationRepository):

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy import String, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.core.models.base import Base
+from core.models.base import Base
 
 class Project(Base):
     __tablename__ = "projects"

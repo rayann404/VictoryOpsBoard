@@ -1,7 +1,7 @@
 from typing import List
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from backend.core.models.base import Base
+from core.models.base import Base
 
 class Organization(Base):
     __tablename__ = "organizations"
