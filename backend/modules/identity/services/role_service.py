@@ -1,13 +1,12 @@
 from typing import List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from backend.modules.identity.repository import RoleRepository
-from backend.modules.identity.schemas import RoleCreate, RoleUpdate
+
+from backend.modules.identity.repos.user_repository import RoleRepository
+from backend.modules.identity.schemas.user_schemas import RoleCreate, RoleUpdate
 from backend.modules.identity.models.user import Role
 
 class RoleService:
-    def __init__(self, session: AsyncSession):
-        self.role_repo = RoleRepository(session)
-        self.session = session
+    def __init__(self, role_repo: RoleRepository):
+        self.role_repo = role_repo
         
     def _hash_password(self, password: str) -> str:
         return hash(password)

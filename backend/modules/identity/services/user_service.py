@@ -1,13 +1,17 @@
 from typing import List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from backend.modules.identity.repository import UserRepository, RoleRepository
-from backend.modules.identity.schemas import UserCreate, UserUpdate, RoleCreate, RoleUpdate
-from backend.modules.identity.models.user import User, Role
+
+from backend.modules.identity.repos.user_repository import UserRepository
+from backend.modules.identity.schemas.user_schemas import UserCreate, UserUpdate
+from backend.modules.identity.models.user import User
+
+
+class InvalidCredentialsError(Exception):
+    pass
+
 
 class UserService:
-    def __init__(self, session: AsyncSession):
-        self.user_repo = UserRepository(session)
-        self.session = session
+    def __init__(self, user_repo: UserRepository):
+        self.user_repo = user_repo
         
     def _hash_password(self, password: str) -> str:
         return hash(password)
@@ -16,6 +20,15 @@ class UserService:
     # User Methods
     async def get_user(self, user_id: int) -> Optional[User]:
         return await self.user_repo.get_by_id(user_id)
+
+    async def get_user_by_email(self, email: str) -> Optional[User]:
+        return await self.user_repo.get_by_email(email)
+
+    async def authenticate_user(self, email: str, password: str) -> User:
+        user = await self.get_user_by_email(email)
+        if not user or user.hashed_password != self._hash_password(password):
+            raise InvalidCredentialsError()
+        return user
         
     async def get_users(self, skip: int = 0, limit: int = 100) -> List[User]:
         return await self.user_repo.get_all(skip=skip, limit=limit)

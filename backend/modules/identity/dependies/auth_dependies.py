@@ -3,8 +3,13 @@ from fastapi.security import HTTPBearer
 from ..services.auth_service import AuthService
 from ..dependies.user_depends import get_user_service
 from ..services.user_service import UserService
-from ..models.users_model import Users
-from ....core.security.jwt_utils import TOKEN_TYPE_REFRESH, TOKEN_TYPE_ACCESS, TOKEN_TYPE_FIELD
+from ..models.user import User
+from ....core.security.jwt_utils import (
+    TOKEN_TYPE_REFRESH,
+    TOKEN_TYPE_ACCESS,
+    TOKEN_TYPE_FIELD,
+    decode_jwt,
+)
 from jwt.exceptions import ExpiredSignatureError
 
 security = HTTPBearer(auto_error=False)
@@ -27,7 +32,7 @@ def get_validate_token_type(payload: dict, token_type: str) -> bool:
 async def get_user_by_token_type(
         payload: dict,
         user_service: UserService,
-) -> Users:
+) -> User:
     user_email = payload.get('sub')
     if not user_email:
         raise HTTPException(
@@ -56,7 +61,7 @@ class UserGetterFromToken:
         token = credentials.credentials
 
         try:
-            payload = auth_utils.decode_jwt(token)
+            payload = decode_jwt(token)
         except ExpiredSignatureError as err:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -88,5 +93,4 @@ async def require_admin_role(
         )
 
     return user
-
 
