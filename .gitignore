@@ -1,3 +1,6 @@
 /.venv/
 /.idea/
-AGENTS.MD
+AGENTS.md
+.python-version
+pyproject.toml
+uv.lock
