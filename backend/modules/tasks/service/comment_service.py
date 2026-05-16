@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from backend.modules.tasks.models.task import Comment
-from backend.modules.tasks.repo.comments.comment_repository import CommentRepository
-from backend.modules.tasks.schemas.comments.comment_schemas import CommentCreate, CommentUpdate
+from backend.modules.tasks.repo.comment_repository import CommentRepository
+from backend.modules.tasks.schemas.comment_schemas import CommentCreate, CommentUpdate
 
 
 class CommentService:

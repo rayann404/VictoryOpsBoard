@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from backend.modules.projects.models.project import Project
-from backend.modules.projects.repo.projects.project_repository import ProjectRepository
-from backend.modules.projects.schemas.projects.project_schemas import ProjectCreate, ProjectUpdate
+from backend.modules.projects.repo.project_repository import ProjectRepository
+from backend.modules.projects.schemas.project_schemas import ProjectCreate, ProjectUpdate
 
 
 class ProjectService:

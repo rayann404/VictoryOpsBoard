@@ -2,9 +2,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.tasks.depends.tasks.task_depends import get_task_service
-from backend.modules.tasks.schemas.tasks.task_schemas import TaskCreate, TaskResponse, TaskUpdate
-from backend.modules.tasks.service.tasks.task_service import TaskService
+from backend.modules.tasks.depends.task_depends import get_task_service
+from backend.modules.tasks.schemas.task_schemas import TaskCreate, TaskResponse, TaskUpdate
+from backend.modules.tasks.service.task_service import TaskService
 
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])

@@ -2,13 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.projects.depends.projects.project_depends import get_project_service
-from backend.modules.projects.schemas.projects.project_schemas import (
+from backend.modules.projects.depends.project_depends import get_project_service
+from backend.modules.projects.schemas.project_schemas import (
     ProjectCreate,
     ProjectResponse,
     ProjectUpdate,
 )
-from backend.modules.projects.service.projects.project_service import ProjectService
+from backend.modules.projects.service.project_service import ProjectService
 
 
 router = APIRouter(prefix="/projects", tags=["Projects"])

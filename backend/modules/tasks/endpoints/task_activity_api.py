@@ -2,12 +2,12 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.tasks.depends.activities.task_activity_depends import get_task_activity_service
-from backend.modules.tasks.schemas.activities.task_activity_schemas import (
+from backend.modules.tasks.depends.task_activity_depends import get_task_activity_service
+from backend.modules.tasks.schemas.task_activity_schemas import (
     TaskActivityCreate,
     TaskActivityResponse,
 )
-from backend.modules.tasks.service.activities.task_activity_service import TaskActivityService
+from backend.modules.tasks.service.task_activity_service import TaskActivityService
 
 
 router = APIRouter(prefix="/activities", tags=["Task Activities"])

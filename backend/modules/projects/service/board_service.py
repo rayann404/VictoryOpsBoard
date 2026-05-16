@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from backend.modules.projects.models.project import Board
-from backend.modules.projects.repo.boards.board_repository import BoardRepository
-from backend.modules.projects.schemas.boards.board_schemas import BoardCreate, BoardUpdate
+from backend.modules.projects.repo.board_repository import BoardRepository
+from backend.modules.projects.schemas.board_schemas import BoardCreate, BoardUpdate
 
 
 class BoardService:

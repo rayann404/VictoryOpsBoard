@@ -2,13 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from backend.modules.projects.depends.columns.column_depends import get_column_service
-from backend.modules.projects.schemas.columns.column_schemas import (
+from backend.modules.projects.depends.column_depends import get_column_service
+from backend.modules.projects.schemas.column_schemas import (
     ColumnCreate,
     ColumnResponse,
     ColumnUpdate,
 )
-from backend.modules.projects.service.columns.column_service import ColumnService
+from backend.modules.projects.service.column_service import ColumnService
 
 
 router = APIRouter(prefix="/columns", tags=["Columns"])

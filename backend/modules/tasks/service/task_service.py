@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 from backend.modules.tasks.models.task import Task
-from backend.modules.tasks.repo.tasks.task_repository import TaskRepository
-from backend.modules.tasks.schemas.tasks.task_schemas import TaskCreate, TaskUpdate
+from backend.modules.tasks.repo.task_repository import TaskRepository
+from backend.modules.tasks.schemas.task_schemas import TaskCreate, TaskUpdate
 
 
 class TaskService:
