@@ -1,8 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.modules.projects.schemas import ProjectResponse, ProjectCreate, ProjectUpdate
-from backend.modules.projects.service import ProjectService
+from backend.modules.projects.schemas.schemas import ProjectResponse, ProjectCreate, ProjectUpdate
+from backend.modules.projects.service.service import ProjectService
 
 async def get_db_session() -> AsyncSession:
     pass

@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.modules.projects.repository import ProjectRepository
-from backend.modules.projects.schemas import ProjectCreate, ProjectUpdate
+from backend.modules.projects.repo.repository import ProjectRepository
+from backend.modules.projects.schemas.schemas import ProjectCreate, ProjectUpdate
 from backend.modules.projects.models.project import Project
 
 class ProjectService:
