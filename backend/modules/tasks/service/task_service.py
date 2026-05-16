@@ -3,11 +3,12 @@ from typing import List, Optional
 from modules.tasks.models.task import Task
 from modules.tasks.repo.task_repository import TaskRepository
 from modules.tasks.schemas.task_schemas import TaskCreate, TaskUpdate
-
+from modules.tasks.repo.task_activity_repository import TaskActivityRepository
 
 class TaskService:
-    def __init__(self, task_repo: TaskRepository):
+    def __init__(self, task_repo: TaskRepository, activity_repo: TaskActivityRepository):
         self.task_repo = task_repo
+        self.activity_repo = activity_repo
 
     async def get_task(self, task_id: int) -> Optional[Task]:
         return await self.task_repo.get_by_id(task_id)
