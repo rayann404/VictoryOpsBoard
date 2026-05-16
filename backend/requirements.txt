@@ -1,0 +1,15 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]>=2.0.0
+asyncpg
+pydantic>=2.0.0
+pydantic-settings
+python-jose[cryptography]
+passlib[bcrypt]
+nats-py
+redis
+python-dotenv
+httpx
+alembic
+python-multipart
+anthropic
