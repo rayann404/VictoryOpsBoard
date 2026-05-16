@@ -1,7 +1,7 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from backend.modules.organizations.repository import OrganizationRepository
-from backend.modules.organizations.schemas import OrganizationCreate, OrganizationUpdate
+from backend.modules.organizations.repo.repository import OrganizationRepository
+from backend.modules.organizations.schemas.org_schemas import OrganizationCreate, OrganizationUpdate
 from backend.modules.organizations.models.organization import Organization
 
 class OrganizationService:

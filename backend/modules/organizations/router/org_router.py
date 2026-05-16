@@ -2,8 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 # from backend.core.database import get_db_session  # Placeholder for real DB dependency
-from backend.modules.organizations.schemas import OrganizationResponse, OrganizationCreate, OrganizationUpdate
-from backend.modules.organizations.service import OrganizationService
+from backend.modules.organizations.schemas.org_schemas import OrganizationResponse, OrganizationCreate, OrganizationUpdate
+from backend.modules.organizations.service.org_service import OrganizationService
 
 # Mock dependency for session, replace with actual import later
 async def get_db_session() -> AsyncSession:
