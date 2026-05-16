@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+from core.security.hash import hash_password
 from modules.identity.repos.user_repository import UserRepository
 from modules.identity.schemas.user_schemas import UserCreate, UserUpdate
 from modules.identity.models.user import User
@@ -14,7 +15,7 @@ class UserService:
         self.user_repo = user_repo
         
     def _hash_password(self, password: str) -> str:
-        return self._hash_password(password)
+        return hash_password(password)
 
         
     # User Methods
@@ -26,7 +27,7 @@ class UserService:
 
     async def authenticate_user(self, email: str, password: str) -> User:
         user = await self.get_user_by_email(email)
-        if not user or user.hashed_password != self._hash_password(password):
+        if not user or not validate_password(password, user.hashed_password):
             raise InvalidCredentialsError()
         return user
         
