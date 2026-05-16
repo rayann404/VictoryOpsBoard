@@ -1,5 +1,4 @@
 from typing import List, Optional
-from fastapi import HTTPException
 from modules.tasks.models.task import Task
 from modules.tasks.repo.task_repository import TaskRepository
 from modules.tasks.schemas.task_schemas import TaskCreate, TaskUpdate
@@ -29,7 +28,7 @@ class TaskService:
         if success:
             pass
         return success
-    
+
     async def move_task(self, task_id: int, new_column_id: int, user_id: int) -> Optional[Task]:
         task = await self.task_repo.get_by_id(task_id)
         if not task:
@@ -37,6 +36,10 @@ class TaskService:
         old_column_id = task.column_id
         if old_column_id == new_column_id:
             return task
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3ef4b74 (feat: add move_task method to task_activities repo)
         updated_task = await self.task_repo.update(task, column_id=new_column_id)
 
         await self.activity_repo.create(
@@ -46,8 +49,7 @@ class TaskService:
             old_value=str(old_column_id),
             new_value=str(new_column_id)
         )
-   
+
         # 5. TODO: Отправить событие в NATS для Real-time и Automation
 
         return updated_task
-
