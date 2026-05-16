@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
-from backend.modules.identity.services.auth_service import AuthService
-from ..schemas.auth_schemas import UserTokenInfo, UserLoginRequest
-from ..schemas.user_schemas import UserCreate
-from backend.modules.identity.dependies.auth_dependies import (
+from modules.identity.services.auth_service import AuthService
+from modules.identity.schemas.auth_schemas import UserTokenInfo, UserLoginRequest
+from modules.identity.schemas.user_schemas import UserCreate
+from modules.identity.dependies.auth_dependies import (
     get_auth_service,
     get_current_auth_user,
     get_current_auth_user_for_refresh,

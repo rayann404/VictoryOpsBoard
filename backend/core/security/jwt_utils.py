@@ -4,8 +4,8 @@ import jwt
 from config import settings
 from datetime import timedelta
 
-from backend.modules.identity.schemas.auth_schemas import UserLoginRequest
-from backend.modules.identity.schemas.user_schemas import UserCreate
+from modules.identity.schemas.auth_schemas import UserLoginRequest
+from modules.identity.schemas.user_schemas import UserCreate
 
 TOKEN_TYPE_FIELD = "type"
 TOKEN_TYPE_ACCESS = "access"

@@ -1,8 +1,8 @@
 from typing import List, Optional
 
-from backend.modules.identity.repos.user_repository import UserRepository
-from backend.modules.identity.schemas.user_schemas import UserCreate, UserUpdate
-from backend.modules.identity.models.user import User
+from modules.identity.repos.user_repository import UserRepository
+from modules.identity.schemas.user_schemas import UserCreate, UserUpdate
+from modules.identity.models.user import User
 
 
 class InvalidCredentialsError(Exception):

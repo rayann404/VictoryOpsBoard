@@ -1,10 +1,10 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer
-from ..services.auth_service import AuthService
-from ..dependies.user_depends import get_user_service
-from ..services.user_service import UserService
-from ..models.user import User
-from ....core.security.jwt_utils import (
+from modules.identity.services.auth_service import AuthService
+from modules.identity.dependies.user_depends import get_user_service
+from modules.identity.services.user_service import UserService
+from modules.identity.models.user import User
+from core.security.jwt_utils import (
     TOKEN_TYPE_REFRESH,
     TOKEN_TYPE_ACCESS,
     TOKEN_TYPE_FIELD,
