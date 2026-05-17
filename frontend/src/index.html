@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VictoryOpsBoard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="app-navbar">
+        <button id="profileButton" type="button" class="profile-button">
+          <span class="avatar">U</span>
+          <span>
+            <strong id="profileLabel">Войти</strong>
+            <small id="profileCompany">Victory workspace</small>
+          </span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+
+        <div class="nav-search-wrap">
+          <label class="nav-search">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m21 21-4.3-4.3"/><circle cx="11" cy="11" r="7"/></svg>
+            <input id="navProjectSearch" type="search" placeholder="Search everything" autocomplete="off" />
+            <span>⌘F</span>
+          </label>
+          <div id="globalSearchResults" class="global-search-results"></div>
+        </div>
+
+        <nav class="top-nav" aria-label="Главная навигация">
+          <div class="nav-group">
+            <p class="nav-group-title">Основное</p>
+            <button type="button" class="nav-item active" data-page="tasks">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l2 2 4-5"/><path d="M5 4h14v16H5z"/></svg>
+              <span>Задачи</span>
+            </button>
+            <button type="button" class="nav-item" data-page="boards">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M9 5v14M15 5v14"/></svg>
+              <span>Доски</span>
+            </button>
+            <button type="button" class="nav-item" data-page="projects">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h7l2 2h9v10H3z"/></svg>
+              <span>Проекты</span>
+            </button>
+            <button type="button" class="nav-item" data-page="organizations">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 20V7l6-3 6 3v13"/><path d="M9 10h.01M15 10h.01M9 14h.01M15 14h.01"/></svg>
+              <span>Организации</span>
+            </button>
+          </div>
+        </nav>
+
+        <section class="nav-projects" aria-label="Проекты">
+          <header>
+            <button id="projectsCollapseButton" type="button" class="nav-section-toggle" aria-expanded="true">⌃</button>
+            <p class="nav-group-title">Проекты</p>
+            <button id="openNavProjectDialog" type="button" class="nav-icon-button" aria-label="Создать проект">+</button>
+          </header>
+          <div id="navProjectList" class="nav-project-list"></div>
+        </section>
+
+        <div class="navbar-actions">
+          <a class="brand-block" href="#" aria-label="VictoryOpsBoard">
+            <span class="brand-mark">V</span>
+            <span>
+              <span class="eyebrow">EventFlow AI</span>
+              <strong>VictoryOps Board</strong>
+            </span>
+          </a>
+        </div>
+      </aside>
+
+      <main class="workspace-page">
+        <section class="page" data-page-panel="organizations">
+          <header class="page-header">
+            <h1>Организации</h1>
+            <p>Компании и команды, внутри которых живут проекты, доски и задачи.</p>
+          </header>
+          <section class="management-layout">
+            <form id="organizationForm" class="management-form">
+              <span class="form-kicker">Workspace root</span>
+              <h2>Создать организацию</h2>
+              <p>Добавь агентство, команду или клиентский контур. После выбора организации проекты ниже будут фильтроваться по ней.</p>
+              <label class="field"><span>Название</span><input name="name" type="text" placeholder="Victory Group" required /></label>
+              <label class="field"><span>Slug</span><input name="slug" type="text" placeholder="victory-group" required /></label>
+              <button type="submit">Создать организацию</button>
+              <div id="organizationInsights" class="management-insights"></div>
+            </form>
+            <section class="resource-panel">
+              <div class="resource-panel-head">
+                <div>
+                  <span class="form-kicker">Active workspaces</span>
+                  <h2>Организации</h2>
+                </div>
+              </div>
+              <div id="organizationList" class="resource-list"></div>
+            </section>
+          </section>
+        </section>
+
+        <section class="page" data-page-panel="projects">
+          <header class="page-header">
+            <h1>Проекты</h1>
+            <p>Клиентские потоки работы: каждый проект связывает организацию, доски и delivery-задачи.</p>
+          </header>
+          <section class="management-layout">
+            <form id="projectManagementForm" class="management-form">
+              <span class="form-kicker">Client flow</span>
+              <h2>Создать проект</h2>
+              <p>Опиши рабочий поток клиента. После создания проект появится в навбаре и сможет получить одну или несколько досок.</p>
+              <div class="quick-templates">
+                <button type="button" data-template="project:ads">Рекламный запуск</button>
+                <button type="button" data-template="project:site">Лендинг</button>
+                <button type="button" data-template="project:support">Поддержка</button>
+              </div>
+              <label class="field"><span>Организация</span><select id="projectOrgSelect" name="organization_id" required></select></label>
+              <label class="field"><span>Название</span><input name="name" type="text" placeholder="Client launch" required /></label>
+              <label class="field"><span>Описание</span><textarea name="description" placeholder="Кратко о проекте"></textarea></label>
+              <button type="submit">Создать проект</button>
+              <div id="projectInsights" class="management-insights"></div>
+            </form>
+            <section class="resource-panel">
+              <div class="resource-panel-head">
+                <div>
+                  <span class="form-kicker">Delivery portfolio</span>
+                  <h2>Проекты</h2>
+                </div>
+              </div>
+              <div id="projectList" class="resource-list"></div>
+            </section>
+          </section>
+        </section>
+
+        <section class="page" data-page-panel="boards">
+          <header class="page-header">
+            <h1>Доски</h1>
+            <p>Доски проекта: production, design, ads или любой другой процесс, который нужно вести kanban-ом.</p>
+          </header>
+          <section class="management-layout">
+            <form id="boardManagementForm" class="management-form">
+              <span class="form-kicker">Process board</span>
+              <h2>Создать доску</h2>
+              <p>Доска станет рабочим kanban-пространством. Колонки и задачи создаются уже внутри выбранной доски.</p>
+              <div class="quick-templates">
+                <button type="button" data-template="board:delivery">Delivery</button>
+                <button type="button" data-template="board:design">Design</button>
+                <button type="button" data-template="board:content">Content</button>
+              </div>
+              <label class="field"><span>Проект</span><select id="boardProjectSelect" name="project_id" required></select></label>
+              <label class="field"><span>Название</span><input name="name" type="text" placeholder="Delivery board" required /></label>
+              <button type="submit">Создать доску</button>
+              <div id="boardInsights" class="management-insights"></div>
+            </form>
+            <section class="resource-panel">
+              <div class="resource-panel-head">
+                <div>
+                  <span class="form-kicker">Kanban spaces</span>
+                  <h2>Доски</h2>
+                </div>
+              </div>
+              <div id="boardList" class="resource-list"></div>
+            </section>
+          </section>
+        </section>
+
+        <section class="page active" data-page-panel="tasks">
+          <header class="page-header task-page-header">
+            <div>
+              <h1 id="boardTitle">Задачи</h1>
+              <p>Колонки и задачи выбранной доски.</p>
+            </div>
+            <div class="hero-actions">
+              <button id="newColumnButton" type="button" class="secondary">Новая колонка</button>
+              <button id="newTaskButton" type="button" class="primary-cta">+ Новая задача</button>
+            </div>
+          </header>
+
+          <section id="taskOverview" class="task-overview"></section>
+
+          <section class="workspace-toolbar">
+            <div class="workspace-selectors">
+              <label class="field compact-field"><span>Организация</span><select id="organizationSelect"></select></label>
+              <label class="field compact-field"><span>Проект</span><select id="projectSelect"></select></label>
+              <label class="field compact-field"><span>Доска</span><select id="boardSelect"></select></label>
+            </div>
+          </section>
+
+          <section id="emptyState" class="empty-screen"></section>
+          <section class="board-shell">
+            <div id="kanbanBoard" class="kanban-board"></div>
+          </section>
+        </section>
+
+      </main>
+
+      <div id="overlay" class="overlay"></div>
+
+      <section id="taskDrawer" class="task-modal" aria-hidden="true">
+        <article class="task-card-modal">
+          <div class="drawer-head">
+            <div>
+              <p class="eyebrow">Задача</p>
+              <h2 id="drawerTitle">Новая задача</h2>
+            </div>
+            <button id="closeDrawerButton" type="button" class="ghost">Закрыть</button>
+          </div>
+
+          <form id="taskForm" class="drawer-form">
+            <input name="id" type="hidden" />
+
+            <label class="field">
+              <span>Название</span>
+              <input name="title" type="text" placeholder="Что нужно сделать?" required />
+            </label>
+
+            <label class="field">
+              <span>Описание</span>
+              <textarea name="description" placeholder="Контекст, критерии готовности, ссылки"></textarea>
+            </label>
+
+            <div class="form-row">
+              <label class="field">
+                <span>Колонка</span>
+                <select name="column_id" required></select>
+              </label>
+              <label class="field">
+                <span>Приоритет</span>
+                <select name="priority">
+                  <option value="1">P1 низкий</option>
+                  <option value="2">P2 обычный</option>
+                  <option value="3">P3 важный</option>
+                  <option value="4">P4 высокий</option>
+                  <option value="5">P5 критичный</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="form-row">
+              <label class="field">
+                <span>Автор</span>
+                <select name="creator_id" required></select>
+              </label>
+              <label class="field">
+                <span>Исполнитель</span>
+                <select name="assignee_id"></select>
+              </label>
+            </div>
+
+            <label class="field">
+              <span>Metadata JSON</span>
+              <textarea name="metadata_json" placeholder='{"source":"manual"}'></textarea>
+            </label>
+
+            <div class="drawer-actions">
+              <button type="submit">Сохранить</button>
+              <button id="deleteTaskButton" type="button" class="danger">Удалить</button>
+              <button id="catchupButton" type="button" class="secondary">AI Catch Up</button>
+            </div>
+          </form>
+
+          <section id="taskExtra" class="task-extra"></section>
+        </article>
+
+        <aside id="aiSummaryPanel" class="ai-summary-panel" aria-live="polite"></aside>
+      </section>
+    </div>
+
+    <section id="authView" class="auth-view" aria-hidden="true">
+      <div class="auth-card">
+        <button id="closeAuthButton" type="button" class="ghost auth-close">Закрыть</button>
+        <div class="auth-hero account-panel">
+          <p class="eyebrow">Account</p>
+          <div class="account-person">
+            <span id="accountAvatar" class="account-avatar">U</span>
+            <div>
+              <h2 id="accountTitle">Личный кабинет</h2>
+              <p id="accountSubtitle">Войди, чтобы управлять профилем и рабочим контекстом.</p>
+            </div>
+          </div>
+          <div id="profileStats" class="profile-stats"></div>
+          <div id="accountSnapshot" class="account-snapshot"></div>
+        </div>
+
+        <div class="account-workspace">
+          <form id="authForm" class="auth-form">
+            <div class="auth-tabs" aria-label="Auth mode">
+              <button id="authLoginTab" type="button" class="active">Вход</button>
+              <button id="authRegisterTab" type="button">Регистрация</button>
+            </div>
+
+            <label class="field">
+              <span>Email</span>
+              <input id="authEmail" type="email" placeholder="user@example.com" autocomplete="email" required />
+            </label>
+            <label class="field">
+              <span>Password</span>
+              <input id="authPassword" type="password" placeholder="минимум 8 символов" autocomplete="current-password" required minlength="8" />
+            </label>
+            <label id="authNameField" class="field hidden">
+              <span>Имя для регистрации</span>
+              <input id="authName" type="text" placeholder="Например: Anastasia" />
+            </label>
+
+            <div class="auth-actions">
+              <button id="loginButton" type="button">Войти</button>
+              <button id="registerButton" type="button" class="primary-cta hidden">Зарегистрироваться</button>
+            </div>
+          </form>
+
+          <form id="profileForm" class="profile-form hidden">
+            <div>
+              <p class="eyebrow">Profile settings</p>
+              <h3>Данные пользователя</h3>
+            </div>
+            <label class="field">
+              <span>Имя пользователя</span>
+              <input id="profileName" type="text" placeholder="Например: Anastasia" />
+            </label>
+            <label class="field">
+              <span>Email</span>
+              <input id="profileEmail" type="email" placeholder="user@example.com" required />
+            </label>
+            <label class="field">
+              <span>Новый пароль</span>
+              <input id="profilePassword" type="password" placeholder="оставь пустым, если не меняешь" minlength="8" autocomplete="new-password" />
+            </label>
+            <div class="auth-actions">
+              <button id="saveProfileButton" type="submit" class="primary-cta">Сохранить профиль</button>
+              <button id="logoutButton" type="button" class="secondary">Выйти</button>
+            </div>
+          </form>
+
+          <p id="tokenState" class="muted">Токен не задан</p>
+          <p id="authMessage" class="auth-message" role="status"></p>
+
+        </div>
+      </div>
+    </section>
+
+    <dialog id="navProjectDialog">
+      <form id="navProjectForm" class="dialog-card create-project-dialog">
+        <p class="eyebrow">Новый проект</p>
+        <h2>Создать проект</h2>
+        <p class="muted">Проект появится в списке слева и станет основой для досок и задач.</p>
+        <label class="field">
+          <span>Организация</span>
+          <select id="navProjectOrgSelect" name="organization_id" required></select>
+        </label>
+        <label class="field">
+          <span>Название</span>
+          <input name="name" type="text" placeholder="Запуск рекламы для клиента" required />
+        </label>
+        <label class="field">
+          <span>Описание</span>
+          <textarea name="description" placeholder="Кратко опиши рабочий поток"></textarea>
+        </label>
+        <div class="drawer-actions">
+          <button type="submit">Создать проект</button>
+          <button id="cancelNavProjectButton" type="button" class="secondary">Отмена</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="columnDialog">
+      <form id="columnForm" class="dialog-card">
+        <h2>Новая колонка</h2>
+        <label class="field">
+          <span>Название</span>
+          <input name="name" type="text" placeholder="Например: In progress" required />
+        </label>
+        <div class="form-row">
+          <label class="field">
+            <span>Позиция</span>
+            <input name="position" type="number" value="0" />
+          </label>
+          <label class="field">
+            <span>WIP limit</span>
+            <input name="wip_limit" type="number" placeholder="опционально" />
+          </label>
+        </div>
+        <div class="drawer-actions">
+          <button type="submit">Создать</button>
+          <button id="cancelColumnButton" type="button" class="secondary">Отмена</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>
