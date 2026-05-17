@@ -1,7 +1,7 @@
 from fastapi import WebSocket
 
-from realtime.channels import project_channel
-from realtime.infrastructure.manager import (
+from core.realtime.channels import project_channel
+from core.realtime.infrastructure.manager import (
     ConnectionManager,
 )
 

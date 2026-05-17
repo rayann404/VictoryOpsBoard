@@ -2,7 +2,7 @@ import orjson
 
 from redis.asyncio import Redis
 
-from realtime.services.event_bus import EventBus
+from core.realtime.services.event_bus import EventBus
 
 
 class RedisEventBus(EventBus):
@@ -18,7 +18,7 @@ class RedisEventBus(EventBus):
         channel: str,
         event: dict,
     ) -> None:
-
+        print("REDIS PUBLISH:", channel, event)
         await self.redis.publish(
             channel,
             orjson.dumps(event),

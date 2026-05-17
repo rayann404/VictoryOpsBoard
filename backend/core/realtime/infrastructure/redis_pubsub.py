@@ -2,7 +2,7 @@ import orjson
 
 from redis.asyncio import Redis
 
-from realtime.infrastructure.manager import (
+from core.realtime.infrastructure.manager import (
     ConnectionManager,
 )
 
@@ -18,27 +18,28 @@ class RedisPubSubListener:
         self.manager = manager
 
     async def start(self):
-
+        print("1️⃣ LISTENER STARTED")
         pubsub = self.redis.pubsub()
 
         await pubsub.psubscribe(
             "project:*",
         )
-
+        print("2️⃣ SUBSCRIBED TO project:*")
         async for message in pubsub.listen():
-            if message["type"] != "pmessage":
-                continue
+            try:
+                print("3️⃣ RAW MESSAGE:", message)
 
-            channel = (
-                message["channel"]
-                .decode()
-            )
+                if message["type"] != "pmessage":
+                    continue
 
-            data = orjson.loads(
-                message["data"]
-            )
+                channel = message["channel"].decode()
+                data = orjson.loads(message["data"])
 
-            await self.manager.broadcast(
-                channel=channel,
-                message=data,
-            )
+                print("4️⃣ BEFORE BROADCAST:", channel, data)
+
+                await self.manager.broadcast(channel, data)
+
+                print("5️⃣ AFTER BROADCAST")
+
+            except Exception as e:
+                print("❌ LISTENER ERROR:", e)

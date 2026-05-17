@@ -15,13 +15,14 @@ class ConnectionManager:
 
     async def subscribe(self, websocket: WebSocket, channel: str):
         self.channels[channel].add(websocket)
+        print("WS SUBSCRIBE:", channel)
+        print("ALL CHANNELS:", self.channels)
 
     async def unsubscribe(self, websocket: WebSocket, channel: str):
         self.channels[channel].discard(websocket)
 
     async def broadcast(
             self,
-            websocket: WebSocket,
             channel: str,
             message: dict
     ):
@@ -33,6 +34,8 @@ class ConnectionManager:
 
             except Exception:
                 dead_connections.append(websocket)
-
+        print("LOG | BROADCAST TO WS")
+        print("WS COUNT:", len(self.channels.get(channel, [])))
+        print("WS OBJECTS:", self.channels.get(channel))
         for ws in dead_connections:
             self.disconnect(ws)

@@ -5,16 +5,28 @@ from modules.tasks.repo.task_repository import TaskRepository
 from modules.tasks.schemas.task_schemas import TaskCreate, TaskUpdate
 from modules.tasks.repo.task_activity_repository import TaskActivityRepository
 from core.realtime.services.event_bus import EventBus
+from core.realtime.events.task_events import TaskCreatedEvent
+from core.realtime.channels import project_channel
+from modules.projects.repo.board_repository import BoardRepository
+from modules.projects.repo.column_repository import ColumnRepository
+from modules.projects.repo.project_repository import ProjectRepository
+
 
 class TaskService:
     def __init__(
             self,
             task_repo: TaskRepository,
             activity_repo: TaskActivityRepository,
+            column_repo: ColumnRepository,
+            board_repo: BoardRepository,
+            project_repo: ProjectRepository,
             event_bus: EventBus,
     ):
         self.task_repo = task_repo
         self.activity_repo = activity_repo
+        self.column_repo = column_repo
+        self.board_repo = board_repo
+        self.project_repo = project_repo
         self.event_bus = event_bus
 
     async def get_task(self, task_id: int) -> Optional[Task]:
@@ -25,28 +37,32 @@ class TaskService:
 
     async def create_task(self, data: TaskCreate) -> Task:
         task = await self.task_repo.create(**data.model_dump())
+        column = await self.column_repo.get_by_id(task.column_id)
+        board = await self.board_repo.get_by_id(column.board_id)
+        project = await self.project_repo.get_by_id(board.project_id)
         event = TaskCreatedEvent(
             type="task.created",
 
             task_id=str(task.id),
 
-            project_id=str(task.project_id),
+            project_id=str(board.project_id),
 
             organization_id=str(
-                task.organization_id
+                project.organization_id
             ),
 
             title=task.title,
-            status=task.status,
+            column_id=task.column_id,
         )
-
+        print("LOG | Task created")
         await self.event_bus.publish(
             channel=project_channel(
-                str(task.project_id)
+                str(board.project_id)
             ),
 
             event=event.model_dump(),
         )
+        print("LOG | Event publish")
 
         await self.activity_repo.create(
             activity_type="created",
@@ -99,18 +115,16 @@ class TaskService:
 
         return updated_task
 
-
     async def delete_task(self, task_id: int) -> bool:
         success = await self.task_repo.delete(task_id)
         if success:
             pass
         return success
 
-
     async def move_task(self, task_id: int, new_column_id: int, user_id: int) -> Optional[Task]:
         task = await self.task_repo.get_by_id(task_id)
         if not task:
-             return None
+            return None
         old_column_id = task.column_id
         if old_column_id == new_column_id:
             return task

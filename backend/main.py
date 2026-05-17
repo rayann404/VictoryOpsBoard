@@ -22,6 +22,8 @@ async def lifespan(app: FastAPI):
     listener_task = asyncio.create_task(
         listener.start()
     )
+    print("LIFESPAN STARTED")
+    print("STARTING REDIS LISTENER")
 
     yield
 
