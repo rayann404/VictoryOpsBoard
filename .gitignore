@@ -1,5 +1,5 @@
 /.venv/
-/.idea/
+*/.idea/
 AGENTS.MD
 /backend/core/security/certs
 .python-version
@@ -11,3 +11,5 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+.idea/
+*.iml
