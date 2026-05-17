@@ -4,11 +4,18 @@ from modules.tasks.models.task import Task
 from modules.tasks.repo.task_repository import TaskRepository
 from modules.tasks.schemas.task_schemas import TaskCreate, TaskUpdate
 from modules.tasks.repo.task_activity_repository import TaskActivityRepository
+from core.realtime.services.event_bus import EventBus
 
 class TaskService:
-    def __init__(self, task_repo: TaskRepository, activity_repo: TaskActivityRepository):
+    def __init__(
+            self,
+            task_repo: TaskRepository,
+            activity_repo: TaskActivityRepository,
+            event_bus: EventBus,
+    ):
         self.task_repo = task_repo
         self.activity_repo = activity_repo
+        self.event_bus = event_bus
 
     async def get_task(self, task_id: int) -> Optional[Task]:
         return await self.task_repo.get_by_id(task_id)
@@ -31,6 +38,14 @@ class TaskService:
 
             title=task.title,
             status=task.status,
+        )
+
+        await self.event_bus.publish(
+            channel=project_channel(
+                str(task.project_id)
+            ),
+
+            event=event.model_dump(),
         )
 
         await self.activity_repo.create(
