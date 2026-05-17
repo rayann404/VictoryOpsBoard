@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from modules.ai.AICatchUpService import AIService
-from depends.ai_depends import get_ai_service
-from schemas.ai_schemas import CatchUpResponse
+from modules.ai.depends.ai_depends import get_ai_service
+from modules.ai.schemas.ai_schemas import CatchUpResponse
 
 
 router = APIRouter(
