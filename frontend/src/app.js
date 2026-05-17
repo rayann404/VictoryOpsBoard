@@ -1,6 +1,7 @@
 const state = {
   apiBase: localStorage.getItem("victory.apiBase") || "/api",
   token: localStorage.getItem("victory.accessToken") || "",
+  refreshToken: localStorage.getItem("victory.refreshToken") || "",
   selectedOrganizationId: Number(localStorage.getItem("victory.organizationId")) || null,
   selectedProjectId: Number(localStorage.getItem("victory.projectId")) || null,
   selectedBoardId: Number(localStorage.getItem("victory.boardId")) || null,
@@ -15,6 +16,8 @@ const state = {
   projectSearch: "",
   projectsCollapsed: false,
   currentUser: null,
+  isRefreshing: false,
+  refreshSubscribers: [],
   data: {
     users: [],
     organizations: [],
@@ -120,10 +123,11 @@ function apiUrl(path) {
   return `${state.apiBase.replace(/\/$/, "")}${path}`;
 }
 
-function requestHeaders(hasBody = false) {
+function requestHeaders(hasBody = false, useRefreshToken = false) {
   const headers = {};
   if (hasBody) headers["content-type"] = "application/json";
-  if (state.token) headers.authorization = `Bearer ${state.token}`;
+  const token = useRefreshToken ? state.refreshToken : state.token;
+  if (token) headers.authorization = `Bearer ${token}`;
   return headers;
 }
 
@@ -131,25 +135,79 @@ async function request(path, options = {}) {
   const method = options.method || "GET";
   setStatus("Запрос...");
 
-  const response = await fetch(apiUrl(path), {
-    ...options,
-    headers: {
-      ...requestHeaders(options.body !== undefined),
-      ...(options.headers || {})
+  try {
+    const response = await fetch(apiUrl(path), {
+      ...options,
+      headers: {
+        ...requestHeaders(options.body !== undefined),
+        ...(options.headers || {})
+      }
+    });
+
+    if (response.status === 401 && !path.includes("/login") && !path.includes("/register") && !path.includes("/refresh")) {
+      if (state.refreshToken) {
+        try {
+          const newToken = await refreshToken();
+          return await request(path, options);
+        } catch (refreshError) {
+          logout();
+          openAuthView();
+          throw new Error("Сессия истекла. Войдите заново.");
+        }
+      } else {
+        logout();
+        openAuthView();
+        throw new Error("Требуется авторизация.");
+      }
     }
-  });
 
-  const text = await response.text();
-  const payload = text ? parseJson(text) : null;
-  log(`${method} ${path} -> ${response.status}`, payload);
+    const text = await response.text();
+    const payload = text ? parseJson(text) : null;
+    log(`${method} ${path} -> ${response.status}`, payload);
 
-  if (!response.ok) {
-    setStatus(`Ошибка ${response.status}`, true);
-    throw new Error(formatApiError(payload, text, response.status));
+    if (!response.ok) {
+      setStatus(`Ошибка ${response.status}`, true);
+      throw new Error(formatApiError(payload, text, response.status));
+    }
+
+    setStatus("Готово");
+    return payload;
+  } catch (error) {
+    setStatus("Ошибка сети", true);
+    throw error;
+  }
+}
+
+async function refreshToken() {
+  if (state.isRefreshing) {
+    return new Promise((resolve, reject) => {
+      state.refreshSubscribers.push({ resolve, reject });
+    });
   }
 
-  setStatus("Готово");
-  return payload;
+  state.isRefreshing = true;
+  try {
+    const data = await fetch(apiUrl("/refresh"), {
+      method: "POST",
+      headers: requestHeaders(false, true)
+    });
+
+    if (!data.ok) throw new Error("Refresh failed");
+
+    const tokenInfo = await data.json();
+    state.token = tokenInfo.access_token;
+    localStorage.setItem("victory.accessToken", state.token);
+    
+    state.refreshSubscribers.forEach((s) => s.resolve(state.token));
+    state.refreshSubscribers = [];
+    return state.token;
+  } catch (error) {
+    state.refreshSubscribers.forEach((s) => s.reject(error));
+    state.refreshSubscribers = [];
+    throw error;
+  } finally {
+    state.isRefreshing = false;
+  }
 }
 
 function formatApiError(payload, text, status) {
@@ -813,8 +871,8 @@ function renderTaskCard(task) {
     </div>
     <p>${escapeHtml(task.description || "Без описания")}</p>
     <div class="task-card-meta">
-      <span>Автор #${task.creator_id}</span>
-      ${task.assignee_id ? `<span>Исполнитель #${task.assignee_id}</span>` : "<span>Не назначена</span>"}
+      <span>Автор: ${escapeHtml(formatActor(task.creator_id))}</span>
+      ${task.assignee_id ? `<span>Исполнитель: ${escapeHtml(formatActor(task.assignee_id))}</span>` : "<span>Не назначена</span>"}
       <span>${commentsCount} комм.</span>
       <span>${activityCount} акт.</span>
     </div>
@@ -874,7 +932,7 @@ async function moveTask(task, newColumnId) {
     method: "POST",
     body: JSON.stringify({
       new_column_id: newColumnId,
-      user_id: task.assignee_id || task.creator_id || 1
+      user_id: state.currentUser?.id || task.assignee_id || task.creator_id || 1
     })
   });
 
@@ -888,6 +946,7 @@ function renderDrawer() {
   if (!isOpen) return;
 
   fillTaskColumnSelect();
+  fillTaskUserSelects();
   renderTaskExtra(task);
   renderAiSummary();
 }
@@ -923,8 +982,10 @@ function fillTaskForm(task, columnId) {
   form.elements.title.value = task?.title || "";
   form.elements.description.value = task?.description || "";
   form.elements.priority.value = String(task?.priority || 1);
-  form.elements.creator_id.value = task?.creator_id || 1;
-  form.elements.assignee_id.value = task?.assignee_id || "";
+  
+  fillTaskUserSelects();
+  form.elements.creator_id.value = String(task?.creator_id || state.currentUser?.id || 1);
+  form.elements.assignee_id.value = task?.assignee_id ? String(task.assignee_id) : "";
   form.elements.metadata_json.value = task?.metadata_json
     ? JSON.stringify(task.metadata_json, null, 2)
     : "";
@@ -941,6 +1002,26 @@ function fillTaskColumnSelect() {
   for (const column of columns) {
     select.append(new Option(column.name, String(column.id)));
   }
+}
+
+function fillTaskUserSelects() {
+  const creatorSelect = els.taskForm.elements.creator_id;
+  const assigneeSelect = els.taskForm.elements.assignee_id;
+  
+  const currentCreatorValue = creatorSelect.value;
+  const currentAssigneeValue = assigneeSelect.value;
+
+  creatorSelect.innerHTML = "";
+  assigneeSelect.innerHTML = '<option value="">не назначен</option>';
+
+  for (const user of state.data.users) {
+    const label = user.full_name ? `${user.full_name} (${user.email})` : user.email;
+    creatorSelect.append(new Option(label, String(user.id)));
+    assigneeSelect.append(new Option(label, String(user.id)));
+  }
+
+  if (currentCreatorValue) creatorSelect.value = currentCreatorValue;
+  if (currentAssigneeValue) assigneeSelect.value = currentAssigneeValue;
 }
 
 function renderTaskExtra(task) {
@@ -967,7 +1048,9 @@ function renderTaskExtra(task) {
       <form id="commentForm" class="comment-form">
         <textarea name="content" placeholder="Добавить комментарий"></textarea>
         <div class="form-row">
-          <input name="user_id" type="number" min="1" value="${task.creator_id}" />
+          <select name="user_id">
+            ${state.data.users.map(u => `<option value="${u.id}" ${u.id === state.currentUser?.id ? 'selected' : ''}>${escapeHtml(u.full_name || u.email)}</option>`).join('')}
+          </select>
           <button type="submit">Отправить</button>
         </div>
       </form>
@@ -988,7 +1071,9 @@ function renderTaskExtra(task) {
           <input name="new_value" type="text" placeholder="Стало" />
         </div>
         <div class="form-row">
-          <input name="user_id" type="number" min="1" value="${task.creator_id}" />
+          <select name="user_id">
+            ${state.data.users.map(u => `<option value="${u.id}" ${u.id === state.currentUser?.id ? 'selected' : ''}>${escapeHtml(u.full_name || u.email)}</option>`).join('')}
+          </select>
           <button type="submit">Записать</button>
         </div>
       </form>
@@ -1066,6 +1151,11 @@ function formatNullableUser(value) {
 }
 
 function formatActor(userId) {
+  const id = Number(userId);
+  const user = state.data.users.find((u) => u.id === id);
+  if (user) {
+    return user.full_name || user.email;
+  }
   return userId ? `Пользователь #${userId}` : "Система";
 }
 
@@ -1119,7 +1209,7 @@ function normalizeTaskPayload(formData, isUpdate) {
   };
 
   if (!isUpdate) {
-    payload.creator_id = Number(formData.get("creator_id"));
+    payload.creator_id = Number(formData.get("creator_id") || state.currentUser?.id || 1);
   }
 
   return pruneEmpty(payload);
@@ -1133,7 +1223,7 @@ async function submitComment(event) {
   try {
     const formData = new FormData(event.currentTarget);
     const content = requiredString(formData, "content");
-    const userId = Number(formData.get("user_id"));
+    const userId = Number(formData.get("user_id") || state.currentUser?.id || 1);
 
     await request("/comments/", {
       method: "POST",
@@ -1159,7 +1249,7 @@ async function submitActivity(event) {
       old_value: optionalString(formData, "old_value"),
       new_value: optionalString(formData, "new_value"),
       task_id: task.id,
-      user_id: Number(formData.get("user_id"))
+      user_id: Number(formData.get("user_id") || state.currentUser?.id || 1)
     };
 
     await request("/activities/", {
@@ -1620,8 +1710,10 @@ async function login(mode) {
     });
 
 	    state.token = tokenInfo.access_token;
+	    state.refreshToken = tokenInfo.refresh_token || "";
 	    state.userEmail = email;
 	    localStorage.setItem("victory.accessToken", state.token);
+	    localStorage.setItem("victory.refreshToken", state.refreshToken);
 	    localStorage.setItem("victory.userEmail", email);
 	    await loadCurrentUser();
 	    renderTokenState();
@@ -1758,14 +1850,17 @@ function closeAuthView() {
 
 function logout() {
   state.token = "";
+  state.refreshToken = "";
   state.userEmail = "";
   state.currentUser = null;
   localStorage.removeItem("victory.accessToken");
+  localStorage.removeItem("victory.refreshToken");
   localStorage.removeItem("victory.userEmail");
   renderTokenState();
   renderAccountView();
   showAuthMessage("Вы вышли из аккаунта.");
 }
+
 
 function handleNavClick(event) {
   const item = event.currentTarget;
