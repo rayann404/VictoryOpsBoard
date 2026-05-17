@@ -16,5 +16,6 @@ class CommentRepository(BaseRepository[Comment]):
             .order_by(Comment.created_at.desc())
             .limit(limit)
         )
+        # TODO: решить проблему с пагинацией
 
         return comments.scalars().all()

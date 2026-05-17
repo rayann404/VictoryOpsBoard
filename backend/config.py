@@ -14,6 +14,9 @@ class AuthJWT(BaseModel):
 
 class Settings(BaseSettings):
     DATABASE_URL: str
+    GEMINI_API_KEY: str = "" # TODO: ДОБАВИТЬ КЛЮЧ И УБРАТЬ В .ENV
+    AI_MODEL: str = "gemini-2.5-flash" 
+
     auth_jwt: AuthJWT = AuthJWT()
 
     model_config = SettingsConfigDict(env_file=BASE_DIR / '.env')
