@@ -23,6 +23,9 @@ services:
     image: redis:7-alpine
     container_name: eventflow_redis
     restart: always
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "6379:6379"
     volumes:
@@ -38,6 +41,26 @@ services:
       - "8222:8222"   # monitoring HTTP
     command: ["-js"] # JetStream включён (если понадобится очереди/стримы)
 
+  backend:
+    build: .
+    container_name: eventflow_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      nats:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/eventflow
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+    volumes:
+      - ./backend:/app  # для горячей перезагрузки при разработке
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 volumes:
   postgres_data:
   redis_data:
