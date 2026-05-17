@@ -1,5 +1,3 @@
-from typing import List
-from modules.tasks.models.task import Task, Comment
 from modules.tasks.repo.task_repository import TaskRepository
 from modules.tasks.repo.comment_repository import CommentRepository
 from modules.projects.repo.board_repository import BoardRepository
@@ -31,47 +29,19 @@ CATCHUP_PROMPT_TEMPLATE = """
 - Формат: Ты ДОЛЖЕН вернуть ТОЛЬКО валидный JSON. Не пиши никакой вводной информации, пояснений или markdown-разметки (типа ```json). Только сам объект.
 """
 
-class AICatchUpService:
-    def __init__(self, api_key: str):
-        self.api_key = api_key
-
-    def _prepare_comments_context(self, comments: List[Comment]) -> str:
-        """Сборка текста комментариев для промпта"""
-        if not comments:
-            return "Комментарии отсутствуют."
-
-        context_lines = []
-        for c in comments:
-            author_info = f"Пользователь {c.user_id}"
-            line = f"[{c.created_at}] {author_info}: {c.content}"
-            context_lines.append(line)
-
-        return "\n".join(context_lines)
-
-    async def get_task_catchup(self, task: Task, comments: List[Comment]) -> str:
-        """Сборка промпта для задачи"""
-        comments_text = self._prepare_comments_context(comments)
-
-        prompt = CATCHUP_PROMPT_TEMPLATE.format(
-            task_title=task.title,
-            task_description=task.description or "Описание отсутствует",
-            task_priority=task.priority,
-            comments_text=comments_text
-        )
-
-        return prompt
-
 class AIService:
     def __init__(self, task_repo: TaskRepository, comment_repo: CommentRepository, board_repo: BoardRepository):
         self.task_repo = task_repo
         self.comment_repo = comment_repo
         self.board_repo = board_repo
 
-
-    async def get_all_context(self, task_id: int) -> dict:
+    async def get_task_context(self, task_id: int) -> dict:
         task = await self.task_repo.get_by_id(task_id)
+        if not task:
+            raise ValueError("Task not found")
 
         comments = await self.comment_repo.get_by_task_id(task_id)
+        comments = list(reversed(comments))
 
         return {
             "task": {
@@ -85,10 +55,31 @@ class AIService:
             },
             "comments": [
                 {
-                    "user_id": comment.id,
+                    "user_id": comment.user_id,
                     "content": comment.content,
                     "created_at": comment.created_at
                 }
                 for comment in comments
             ]
+        }
+
+    async def get_task_catchup_payload(self, task_id: int) -> dict:
+        context = await self.get_task_context(task_id)
+        task = context["task"]
+
+        comments_text = "\n".join(
+            f"[{comment['created_at']}] Пользователь {comment['user_id']}: {comment['content']}"
+            for comment in context["comments"]
+        ) or "Комментарии отсутствуют."
+
+        prompt = CATCHUP_PROMPT_TEMPLATE.format(
+            task_title=task["title"],
+            task_description=task["description"] or "Описание отсутствует",
+            task_priority=task["priority"],
+            comments_text=comments_text,
+        )
+
+        return {
+            "context": context,
+            "prompt": prompt,
         }
