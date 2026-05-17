@@ -13,6 +13,7 @@ from modules.ai.endpoints import ai_api
 from google import genai
 from contextlib import asynccontextmanager
 from config import settings
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -50,3 +51,12 @@ app.include_router(projects_router.router)
 app.include_router(task_router.router)
 app.include_router(websocket.router)
 app.include_router(ai_api.router)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
