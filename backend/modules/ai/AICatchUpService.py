@@ -1,6 +1,10 @@
 from modules.tasks.repo.task_repository import TaskRepository
 from modules.tasks.repo.comment_repository import CommentRepository
 from modules.projects.repo.board_repository import BoardRepository
+from google import genai
+from google.genai import types
+from .schemas.ai_schemas import CatchUpResponse
+from config import settings
 
 
 CATCHUP_PROMPT_TEMPLATE = """
@@ -10,9 +14,13 @@ CATCHUP_PROMPT_TEMPLATE = """
 
 КОНТЕКСТ ЗАДАЧИ:
 ---
+ID задачи: {task_id}
 Название: {task_title}
 Описание: {task_description}
 Приоритет: {task_priority}
+ID исполнителя: {task_assignee_id}
+Дата создания: {task_created_at}
+Дата последнего обновления: {task_updated_at}
 ---
 
 ИСТОРИЯ ОБСУЖДЕНИЯ (в хронологическом порядке):
@@ -30,10 +38,17 @@ CATCHUP_PROMPT_TEMPLATE = """
 """
 
 class AIService:
-    def __init__(self, task_repo: TaskRepository, comment_repo: CommentRepository, board_repo: BoardRepository):
+    def __init__(
+        self,
+        task_repo: TaskRepository,
+        comment_repo: CommentRepository,
+        board_repo: BoardRepository,
+        client: genai.Client,
+    ):
         self.task_repo = task_repo
         self.comment_repo = comment_repo
         self.board_repo = board_repo
+        self.client = client
 
     async def get_task_context(self, task_id: int) -> dict:
         task = await self.task_repo.get_by_id(task_id)
@@ -73,9 +88,13 @@ class AIService:
         ) or "Комментарии отсутствуют."
 
         prompt = CATCHUP_PROMPT_TEMPLATE.format(
+            task_id=task["id"],
             task_title=task["title"],
             task_description=task["description"] or "Описание отсутствует",
             task_priority=task["priority"],
+            task_assignee_id=task["assignee_id"] or "Исполнитель не назначен",
+            task_created_at=task["created_at"],
+            task_updated_at=task["updated_at"],
             comments_text=comments_text,
         )
 
@@ -83,3 +102,18 @@ class AIService:
             "context": context,
             "prompt": prompt,
         }
+
+
+    async def catchup_request(self, payload: dict) -> CatchUpResponse:
+        response = await self.client.aio.models.generate_content(
+            model=settings.AI_MODEL,
+            contents=payload['prompt'],
+            config=types.GenerateContentConfig(
+                temperature=0.1,
+                response_mime_type="application/json",
+                response_schema=CatchUpResponse,
+                max_output_tokens=700,
+            ),
+        )
+
+        return CatchUpResponse.model_validate_json(response.text)
