@@ -1,7 +1,7 @@
 from typing import Any, Optional
 from sqlalchemy import String, ForeignKey, JSON, Text, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from backend.core.models.base import Base
+from core.models.base import Base
 
 class ProjectSummary(Base):
     __tablename__ = "project_summaries"

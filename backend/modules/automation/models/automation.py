@@ -1,7 +1,7 @@
 from typing import Any, Optional
 from sqlalchemy import String, ForeignKey, JSON, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column
-from backend.core.models.base import Base
+from core.models.base import Base
 
 class AutomationRule(Base):
     __tablename__ = "automation_rules"
