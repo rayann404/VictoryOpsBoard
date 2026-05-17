@@ -1,2 +1,15 @@
 /.venv/
-/.idea/
+*/.idea/
+AGENTS.MD
+/backend/core/security/certs
+.python-version
+pyproject.toml
+uv.lock
+/backend/core/security/certs/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.idea/
+*.iml

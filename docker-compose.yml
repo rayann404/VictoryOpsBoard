@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: eventflow_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: eventflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: eventflow_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  nats:
+    image: nats:2-alpine
+    container_name: eventflow_nats
+    restart: always
+    ports:
+      - "4222:4222"   # client connections
+      - "8222:8222"   # monitoring HTTP
+    command: ["-js"] # JetStream включён (если понадобится очереди/стримы)
+
+  backend:
+    build: .
+    container_name: eventflow_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      nats:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:password@db:5432/eventflow
+      REDIS_URL: redis://redis:6379
+      NATS_URL: nats://nats:4222
+    volumes:
+      - ./backend:/app  # для горячей перезагрузки при разработке
+    command: ["--reload"]
+
+  frontend:
+    build: ./frontend
+    container_name: eventflow_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      PORT: "3000"
+      API_URL: http://backend:8000
+      WS_BACKEND_URL: ws://backend:8000
+
+volumes:
+  postgres_data:
+  redis_data:

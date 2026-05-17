@@ -1,0 +1,42 @@
+from fastapi import APIRouter, Depends
+from modules.identity.services.auth_service import AuthService
+from modules.identity.schemas.auth_schemas import UserTokenInfo, UserLoginRequest
+from modules.identity.schemas.user_schemas import UserCreate
+from modules.identity.dependies.auth_dependies import (
+    get_auth_service,
+    get_current_auth_user,
+    get_current_auth_user_for_refresh,
+)
+
+router = APIRouter(
+    prefix="",
+    tags=["Auth"]
+)
+
+@router.post('/register', response_model=UserTokenInfo)
+async def register_user(
+        schema: UserCreate,
+        service: AuthService = Depends(get_auth_service)
+) -> UserTokenInfo:
+    return await service.register_user(schema)
+
+
+
+@router.post('/login', response_model=UserTokenInfo)
+async def login_user(
+    schema: UserLoginRequest,
+    service: AuthService = Depends(get_auth_service)
+) -> UserTokenInfo:
+    return await service.login_user(schema)
+
+
+@router.post(
+    '/refresh',
+    response_model=UserTokenInfo,
+    response_model_exclude_none=True,
+)
+async def auth_refresh_jwt(
+    user: UserLoginRequest = Depends(get_current_auth_user_for_refresh),
+    service: AuthService = Depends(get_auth_service),
+) -> UserTokenInfo:
+    return await service.refresh_user(user)
