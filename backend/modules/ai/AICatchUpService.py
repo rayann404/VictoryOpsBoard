@@ -112,7 +112,7 @@ class AIService:
                 temperature=0.1,
                 response_mime_type="application/json",
                 response_schema=CatchUpResponse,
-                max_output_tokens=700,
+                max_output_tokens=2000,
             ),
         )
 
