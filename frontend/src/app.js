@@ -18,6 +18,8 @@ const state = {
   currentUser: null,
   isRefreshing: false,
   refreshSubscribers: [],
+  ws: null,
+  wsProjectId: null,
   data: {
     users: [],
     organizations: [],
@@ -121,6 +123,19 @@ function log() {}
 
 function apiUrl(path) {
   return `${state.apiBase.replace(/\/$/, "")}${path}`;
+}
+
+function wsUrl() {
+  if (/^https?:\/\//.test(state.apiBase)) {
+    return `${state.apiBase.replace(/^http/, "ws").replace(/\/api\/?$/, "").replace(/\/$/, "")}/ws`;
+  }
+
+  if (state.apiBase.startsWith("/api")) {
+    return "ws://127.0.0.1:8000/ws";
+  }
+
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.host}/ws`;
 }
 
 function requestHeaders(hasBody = false, useRefreshToken = false) {
@@ -245,6 +260,9 @@ async function loadAll() {
 
   reconcileSelection();
   reconcileCurrentUser();
+  if (state.currentPage === "tasks" && state.selectedBoardId) {
+    subscribeProjectSocket(state.selectedProjectId);
+  }
   render();
 }
 
@@ -883,6 +901,90 @@ function renderTaskCard(task) {
   return card;
 }
 
+function subscribeProjectSocket(projectId) {
+  if (!projectId) return;
+
+  if (state.ws && state.ws.readyState === WebSocket.OPEN && state.wsProjectId === projectId) {
+    sendProjectSubscription(projectId);
+    return;
+  }
+
+  if (state.ws) {
+    state.ws.close();
+  }
+
+  state.wsProjectId = projectId;
+  state.ws = new WebSocket(wsUrl());
+
+  state.ws.addEventListener("open", () => {
+    sendProjectSubscription(projectId);
+  });
+
+  state.ws.addEventListener("message", (event) => {
+    handleSocketMessage(event.data);
+  });
+
+  state.ws.addEventListener("close", () => {
+    if (state.wsProjectId === projectId) {
+      state.ws = null;
+    }
+  });
+}
+
+function sendProjectSubscription(projectId) {
+  if (!state.ws || state.ws.readyState !== WebSocket.OPEN) return;
+  state.ws.send(JSON.stringify({
+    action: "subscribe_project",
+    project_id: projectId
+  }));
+}
+
+function handleSocketMessage(rawData) {
+  let payload;
+  try {
+    payload = typeof rawData === "string" ? JSON.parse(rawData) : rawData;
+  } catch {
+    return;
+  }
+
+  const incomingTasks = extractSocketTasks(payload).filter(isTaskForCurrentBoard);
+  if (!incomingTasks.length) return;
+
+  for (const task of incomingTasks) {
+    upsertTask(task);
+  }
+
+  renderManagementPages();
+  renderBoard();
+  renderDrawer();
+}
+
+function extractSocketTasks(payload) {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload.flatMap(extractSocketTasks);
+  if (Array.isArray(payload.tasks)) return payload.tasks;
+  if (payload.task) return [payload.task];
+  if (payload.data) return extractSocketTasks(payload.data);
+  if (payload.payload) return extractSocketTasks(payload.payload);
+  if (payload.id && payload.title && payload.column_id) return [payload];
+  return [];
+}
+
+function isTaskForCurrentBoard(task) {
+  if (task.board_id && task.board_id === state.selectedBoardId) return true;
+  const currentColumnIds = new Set(boardColumns().map((column) => column.id));
+  return currentColumnIds.has(task.column_id);
+}
+
+function upsertTask(task) {
+  const index = state.data.tasks.findIndex((item) => item.id === task.id);
+  if (index >= 0) {
+    state.data.tasks[index] = { ...state.data.tasks[index], ...task };
+    return;
+  }
+  state.data.tasks.push(task);
+}
+
 function handleTaskDragStart(event, task) {
   state.draggedTaskId = task.id;
   event.dataTransfer.effectAllowed = "move";
@@ -1461,6 +1563,9 @@ function openProjectFromNav(id) {
   state.selectedBoardId = state.data.boards.find((board) => board.project_id === id)?.id || null;
   persistSelection();
   setPage(state.selectedBoardId ? "tasks" : "boards");
+  if (state.selectedBoardId) {
+    subscribeProjectSocket(id);
+  }
   render();
 }
 
@@ -1529,6 +1634,7 @@ function openBoard(id) {
   state.selectedBoardId = id;
   persistSelection();
   setPage("tasks");
+  subscribeProjectSocket(state.selectedProjectId);
   render();
 }
 
@@ -1945,6 +2051,9 @@ els.projectSelect.addEventListener("change", () => {
 els.boardSelect.addEventListener("change", () => {
   state.selectedBoardId = Number(els.boardSelect.value) || null;
   persistSelection();
+  if (state.selectedBoardId) {
+    subscribeProjectSocket(state.selectedProjectId);
+  }
   render();
 });
 
