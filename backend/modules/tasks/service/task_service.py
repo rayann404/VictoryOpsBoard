@@ -42,17 +42,16 @@ class TaskService:
         project = await self.project_repo.get_by_id(board.project_id)
         event = TaskCreatedEvent(
             type="task.created",
-
             task_id=str(task.id),
-
-            project_id=str(board.project_id),
-
-            organization_id=str(
-                project.organization_id
-            ),
-
             title=task.title,
             column_id=task.column_id,
+            creator_id=task.creator_id,
+            description=task.description,
+            priority=task.priority,
+            project_id=board.project_id,
+            organization_id=project.organization_id,
+
+
         )
         print("LOG | Task created")
         await self.event_bus.publish(
