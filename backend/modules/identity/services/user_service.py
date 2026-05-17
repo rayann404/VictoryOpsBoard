@@ -10,6 +10,10 @@ class InvalidCredentialsError(Exception):
     pass
 
 
+class UserAlreadyExistsError(Exception):
+    pass
+
+
 class UserService:
     def __init__(self, user_repo: UserRepository):
         self.user_repo = user_repo
@@ -35,11 +39,13 @@ class UserService:
         return await self.user_repo.get_all(skip=skip, limit=limit)
         
     async def create_user(self, data: UserCreate) -> User:
+        if await self.get_user_by_email(data.email):
+            raise UserAlreadyExistsError()
+            
         user_data = data.model_dump(exclude={"password"})
         user_data["hashed_password"] = self._hash_password(data.password)
         
         user = await self.user_repo.create(**user_data)
-
         
         return user
         

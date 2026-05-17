@@ -1,5 +1,4 @@
-import os
+from config import settings
 from redis.asyncio import Redis
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-redis = Redis.from_url(REDIS_URL, decode_responses=False)
+redis = Redis.from_url(settings.REDIS_URL, decode_responses=False)

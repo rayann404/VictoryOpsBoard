@@ -130,12 +130,8 @@ function wsUrl() {
     return `${state.apiBase.replace(/^http/, "ws").replace(/\/api\/?$/, "").replace(/\/$/, "")}/ws`;
   }
 
-  if (state.apiBase.startsWith("/api")) {
-    return "ws://127.0.0.1:8000/ws";
-  }
-
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${protocol}//${window.location.host}/ws`;
+  return `${protocol}//${window.location.host}/api/ws`;
 }
 
 function requestHeaders(hasBody = false, useRefreshToken = false) {
@@ -947,6 +943,41 @@ function handleSocketMessage(rawData) {
     return;
   }
 
+  console.log("Real-time event received:", payload);
+
+  // Handle specific event types from backend
+  if (payload.type === "task.created") {
+    if (!state.data.tasks.find(t => t.id == payload.task_id)) {
+      state.data.tasks.push({
+        id: Number(payload.task_id),
+        title: payload.title,
+        description: payload.description || "",
+        priority: payload.priority,
+        column_id: Number(payload.column_id),
+        creator_id: Number(payload.creator_id),
+        assignee_id: payload.assignee_id ? Number(payload.assignee_id) : null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+      renderManagementPages();
+      renderBoard();
+      renderDrawer();
+    }
+    return;
+  }
+
+  if (payload.type === "task.moved") {
+    const task = state.data.tasks.find(t => t.id == payload.task_id);
+    if (task) {
+      task.column_id = Number(payload.new_column_id);
+      renderManagementPages();
+      renderBoard();
+      renderDrawer();
+    }
+    return;
+  }
+
+  // Fallback: generic task extraction for other event types
   const incomingTasks = extractSocketTasks(payload).filter(isTaskForCurrentBoard);
   if (!incomingTasks.length) return;
 
@@ -2120,4 +2151,5 @@ els.registerButton.addEventListener("click", () => login("register"));
 
 setAuthMode("login");
 render();
+
 loadAll();

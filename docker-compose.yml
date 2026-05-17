@@ -23,9 +23,6 @@ services:
     image: redis:7-alpine
     container_name: eventflow_redis
     restart: always
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
     ports:
       - "6379:6379"
     volumes:
@@ -60,7 +57,21 @@ services:
       NATS_URL: nats://nats:4222
     volumes:
       - ./backend:/app  # для горячей перезагрузки при разработке
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: ["--reload"]
+
+  frontend:
+    build: ./frontend
+    container_name: eventflow_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      PORT: "3000"
+      API_URL: http://backend:8000
+      WS_BACKEND_URL: ws://backend:8000
+
 volumes:
   postgres_data:
   redis_data:

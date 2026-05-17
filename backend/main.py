@@ -11,7 +11,6 @@ from core.realtime.infrastructure.redis import redis
 from core.realtime.infrastructure.redis_pubsub import RedisPubSubListener
 from modules.ai.endpoints import ai_api
 from google import genai
-from contextlib import asynccontextmanager
 from config import settings
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -39,6 +38,11 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         listener_task.cancel()
+        try:
+            await listener_task
+        except asyncio.CancelledError:
+            pass
+        await redis.aclose()
         await app.state.gemini.aio.aclose()
 
 app = FastAPI(lifespan=lifespan)

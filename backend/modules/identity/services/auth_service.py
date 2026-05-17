@@ -1,4 +1,4 @@
-from ..services.user_service import UserService, InvalidCredentialsError
+from ..services.user_service import UserService, InvalidCredentialsError, UserAlreadyExistsError
 from ..schemas.auth_schemas import UserTokenInfo, UserLoginRequest
 from ..schemas.user_schemas import UserCreate
 from core.security.jwt_utils import create_access_token, create_refresh_token
@@ -13,7 +13,13 @@ class AuthService:
             self,
             schema: UserCreate
     ) -> UserTokenInfo:
-        await self.user_service.create_user(schema)
+        try:
+            await self.user_service.create_user(schema)
+        except UserAlreadyExistsError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this email already exists"
+            )
 
         access_token = create_access_token(schema)
         refresh_token = create_refresh_token(schema)

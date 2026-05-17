@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from modules.identity.dependies.user_depends import get_user_service
 from modules.identity.schemas.user_schemas import UserResponse, UserCreate, UserUpdate
-from modules.identity.services.user_service import UserService
+from modules.identity.services.user_service import UserService, UserAlreadyExistsError
 
 router = APIRouter(prefix="/identity/users", tags=["Users"])
 
@@ -12,7 +12,13 @@ async def create_user(
     data: UserCreate,
     service: UserService = Depends(get_user_service),
 ):
-    return await service.create_user(data)
+    try:
+        return await service.create_user(data)
+    except UserAlreadyExistsError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User with this email already exists"
+        )
 
 
 @router.get("/", response_model=List[UserResponse])

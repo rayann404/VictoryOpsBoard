@@ -1,9 +1,7 @@
 import datetime
-
 import jwt
 from config import settings
 from datetime import timedelta
-
 from modules.identity.schemas.auth_schemas import UserLoginRequest
 from modules.identity.schemas.user_schemas import UserCreate
 
@@ -11,10 +9,9 @@ TOKEN_TYPE_FIELD = "type"
 TOKEN_TYPE_ACCESS = "access"
 TOKEN_TYPE_REFRESH = "refresh"
 
-
 def encode_jwt(
         payload: dict,
-        private_key: str = settings.auth_jwt.private_key_path.read_text(),
+        secret: str = settings.auth_jwt.secret_key,
         algorithm: str = settings.auth_jwt.algorithm,
         expire_minutes: int = settings.auth_jwt.access_token_expire_minutes,
         expire_timedelta: timedelta | None = None,
@@ -25,13 +22,15 @@ def encode_jwt(
         expire = now + expire_timedelta
     else:
         expire = now + timedelta(minutes=expire_minutes)
+    
     to_encode.update(
         exp=expire,
         iat=now,
     )
+    # Используем симметричный ключ (строку)
     encoded = jwt.encode(
         to_encode,
-        private_key,
+        secret,
         algorithm=algorithm
     )
     return encoded
@@ -39,15 +38,15 @@ def encode_jwt(
 
 def decode_jwt(
         token: str | bytes,
-        public_key: str = settings.auth_jwt.public_key_path.read_text(),
+        secret: str = settings.auth_jwt.secret_key,
         algorithm: str = settings.auth_jwt.algorithm,
 ):
+    # Используем симметричный ключ
     decoded = jwt.decode(
         token,
-        public_key,
+        secret,
         algorithms=[algorithm]
     )
-
     return decoded
 
 
@@ -86,5 +85,5 @@ def create_refresh_token(
     return create_jwt(
         token_type=TOKEN_TYPE_REFRESH,
         token_data=jwt_payload,
-        expire_timedelta=timedelta(settings.auth_jwt.refresh_token_expire_days)
+        expire_timedelta=timedelta(days=settings.auth_jwt.refresh_token_expire_days)
     )
