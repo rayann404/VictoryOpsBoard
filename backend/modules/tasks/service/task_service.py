@@ -17,7 +17,21 @@ class TaskService:
 
     async def create_task(self, data: TaskCreate) -> Task:
         task = await self.task_repo.create(**data.model_dump())
-        # EDA: Emit event TASK_CREATED
+        event = TaskCreatedEvent(
+            type="task.created",
+
+            task_id=str(task.id),
+
+            project_id=str(task.project_id),
+
+            organization_id=str(
+                task.organization_id
+            ),
+
+            title=task.title,
+            status=task.status,
+        )
+
         return task
 
     async def update_task(self, task_id: int, data: TaskUpdate) -> Optional[Task]:
