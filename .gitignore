@@ -2,11 +2,9 @@
 /.idea/
 AGENTS.MD
 /backend/core/security/certs
-AGENTS.md
 .python-version
 pyproject.toml
 uv.lock
-AGENTS.MD
 /backend/core/security/certs/
 __pycache__/
 *.pyc

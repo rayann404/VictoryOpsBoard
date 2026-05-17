@@ -1,19 +1,12 @@
 import bcrypt
-
-def hash_password(
-        password: str
-) -> bytes:
+def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     pwd_bytes: bytes = password.encode()
-
-    return bcrypt.hashpw(pwd_bytes, salt)
-
-
-def validate_password(
-        password: str,
-        hashed_password: bytes
-) -> bool:
-    return bcrypt.checkpw(
-        password=password.encode(),
-        hashed_password=hashed_password.encode()
-    )
+    hashed = bcrypt.hashpw(pwd_bytes, salt)
+    return hashed.decode('utf-8') # Превращаем байты в строку
+def validate_password(password: str, hashed_password: str) -> bool:
+       
+       return bcrypt.checkpw(
+           password=password.encode(),
+           hashed_password=hashed_password.encode()
+       )
